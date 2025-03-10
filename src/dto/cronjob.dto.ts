@@ -1,7 +1,7 @@
 import { IsNotEmpty, IsString } from "class-validator";
 
 
-export class CronJobDto{
+export class CronjobDto{
 
     @IsString()
     @IsNotEmpty()
@@ -18,4 +18,9 @@ export class CronJobDto{
     @IsString()
     @IsNotEmpty()
     scheduleTime: String
+
+    @IsString()
+    @IsNotEmpty()
+    startDate: String
+
 }

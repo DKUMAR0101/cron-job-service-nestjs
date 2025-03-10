@@ -1,12 +1,16 @@
 
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { CronJobSchema, CronJob } from 'src/schema/cronJob.schema';
+import { CronjobSchema, Cronjob } from 'src/schema/cronJob.schema';
 import { CronJobController } from './cronJob.controller';
 import { cronJobService } from './cronJob.service';
+import { Webhook, WebhookSchema } from 'src/schema/webHook.schema';
+
 
 @Module({
-  imports: [MongooseModule.forFeature([{ name: CronJob.name, schema: CronJobSchema }])],
+  imports: [MongooseModule.forFeature([{ name: Cronjob.name, schema: CronjobSchema }]),
+  MongooseModule.forFeature([{ name: Webhook.name, schema: WebhookSchema }])
+],
   controllers: [CronJobController],
   providers: [cronJobService],
 })

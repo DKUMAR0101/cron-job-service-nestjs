@@ -1,47 +1,44 @@
 import { Injectable } from "@nestjs/common";
-import { CronJob } from "src/schema/cronJob.schema";
+import { Cronjob } from "src/schema/cronJob.schema";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
-import * as cron from 'node-cron';
+import { CronJob } from "cron";
 import axios from "axios";
+
+
 
 
 @Injectable()
 export class cronJobService{
-    constructor(@InjectModel(CronJob.name) private CronJobModel: Model<CronJob>){
-        this.initializeJobs()
+
+    constructor(@InjectModel(Cronjob.name) private CronjobModel: Model<Cronjob>){
+        this.ScheduleJobs()
     }
 
-    // create a task and start it.
-    scheduleJobs(job){
-
-        let task = cron.schedule(job.scheduleTime,async() => {
-
-            try {
-                console.log(`triggering job:  ${job.name}`)
-                const response = await axios.get(job.link)
-                console.log(response);
-
-                job.history.push({time: new Date(), response:'response'})
-                await job.save()
-            } catch (error) {
-                console.log(error)
+    async ScheduleJobs(){
+        const jobs = await this.CronjobModel.find()
+        // console.log(jobs)
+        jobs.forEach((job) =>{
+            if(new Date(job.startDate).getTime() <= new Date().getTime()){
+                
+                return new CronJob(job.scheduleTime, async() => {
+                    try {
+                        const res = await axios.get(job.link)
+                        console.log(res.data);
+                        job.history.push({triggerTime: new Date().toISOString(), response:res.data})
+                        await job.save()
+                        
+                    } catch (error) {
+                        console.log(error);
+                        
+                    }
+        
+                },null,true,'Asia/Kolkata')
+        
             }
+
         })
-        task.start()
 
     }
-
-    async initializeJobs(){
-        try {
-            const jobs = await this.CronJobModel.find().exec()
-
-            for (const job of jobs) {
-                this.scheduleJobs(job)
-            }
-        } catch (error) {
-            console.log(error);    
-        }
-    }
-
+    
 }
